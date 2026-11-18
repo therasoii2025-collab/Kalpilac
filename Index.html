@@ -1,0 +1,407 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Doctor Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: Kalpilac-branded phone-first directory. Brand lockup, title bar, route chips, search, expandable doctor cards, bottom sheet forms. */
+:root{
+  color-scheme:dark;
+  --bg:#0B1210; --surface:#131E1A; --surface-2:#182A21; --fg:#EAF3EC; --muted:#8FA397; --line:#22332B;
+  --accent:#7BD457; --accent-fg:#08140A; --charcoal:#EAF3EC; --trunk:#D79A7C;
+  --leaf-a:#7BD457; --leaf-b:#4FAE3F; --leaf-c:#A5E67F;
+  --good:#5FD38D; --warn:#F2B84B; --crit:#FF8A7A;
+  --good-bg:#123525; --warn-bg:#3A2B0E; --crit-bg:#3E1A17; --chip:#1B2B24; --scrim:rgba(0,0,0,.65);
+  --f-head:'Archivo','Segoe UI',system-ui,sans-serif;
+  --f-body:'Inter','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-block:0 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.wrap{max-width:720px;margin:0 auto}
+.brandbar{margin-top:14px;background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;min-width:0}
+.mark{flex:0 0 auto;width:68px;height:auto}
+.word{flex:1 1 auto;min-width:0;max-width:250px;height:auto}
+.w1{font-family:var(--f-head);font-stretch:125%;font-weight:800;fill:var(--accent)}
+.w2{font-family:var(--f-head);font-stretch:125%;font-weight:700;fill:var(--charcoal)}
+.l1{fill:var(--leaf-a)} .l2{fill:var(--leaf-b)} .l3{fill:var(--leaf-c)}
+.trunk path,.roots path{fill:none;stroke:var(--trunk);stroke-linecap:round}
+.titlebar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
+h1{font-family:var(--f-head);font-weight:700;font-size:24px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0;font-size:14px}
+button{font-family:var(--f-body)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:600 14px var(--f-body);background:var(--accent);color:var(--accent-fg);border:0;border-radius:8px;padding:9px 14px;cursor:pointer}
+.btn.ghost{background:none;color:var(--fg);border:1px solid var(--line);font-weight:500}
+.btn.danger{background:none;color:var(--crit);border:1px solid var(--crit);font-weight:500}
+.btn.sm{padding:6px 10px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi .v{font:700 24px var(--f-head);font-variant-numeric:tabular-nums;color:var(--accent)}
+.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 8px;display:flex;flex-direction:column;gap:8px}
+input,textarea,select{font:400 15px var(--f-body);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px}
+.chips{display:flex;gap:6px;overflow-x:auto}
+.chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.chips .n{opacity:.7;margin-left:6px;font-variant-numeric:tabular-nums}
+#routes{flex-wrap:wrap;overflow-x:visible;overflow-y:auto;max-height:116px}
+.rrow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;color:inherit;padding:14px;cursor:pointer;font:inherit}
+.rrow::after{content:"\203A";color:var(--muted);font-size:22px;line-height:1}
+.rrow .rt{display:flex;flex-direction:column;min-width:0}
+.rrow .rt b{font:700 16px var(--f-head);color:var(--charcoal);overflow-wrap:anywhere}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.rhead[hidden]{display:none}
+.rhead b{font:700 16px var(--f-head);overflow-wrap:anywhere;color:var(--charcoal)}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.head{width:100%;text-align:left;background:none;border:0;color:inherit;padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.head .who{min-width:0}
+.head b{font-weight:600;display:block;overflow-wrap:anywhere}
+.meta{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.pill{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;flex:0 0 auto}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+.body{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.f .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.f .vv{overflow-wrap:anywhere;white-space:pre-wrap}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{background:var(--chip);border-radius:999px;padding:3px 10px;font-size:13px;overflow-wrap:anywhere}
+.none{color:var(--muted);font-size:14px}
+.hist{display:flex;flex-direction:column;gap:6px}
+.hist div{font-size:13px;border-left:2px solid var(--line);padding-left:10px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.phone{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.phone b{font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);padding:22px 16px;text-align:center;border:1px dashed var(--line);border-radius:12px;margin-top:10px}
+.empty b{display:block;color:var(--fg);font-family:var(--f-head);font-size:17px;margin-bottom:4px}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px}
+#sheetwrap{position:fixed;inset:0;background:var(--scrim);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+#sheetwrap[hidden]{display:none}
+#sheet{background:var(--bg);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
+#sheet h2{font:700 18px var(--f-head);margin:0 0 12px;color:var(--charcoal)}
+#sheet form{display:flex;flex-direction:column;gap:10px}
+#sheet label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+#sheet .hint{font-size:12px;color:var(--muted)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:13px;z-index:50;max-width:90%}
+#toast[hidden]{display:none}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <svg class="mark" viewBox="0 0 120 124" role="img" aria-label="Kalpilac tree logo">
+      <g id="canopy"></g>
+      <g class="trunk">
+        <path d="M60 108V82" stroke-width="5"/>
+        <path d="M60 87Q49 77 39 62" stroke-width="3.2"/>
+        <path d="M60 87Q71 77 81 62" stroke-width="3.2"/>
+        <path d="M60 84Q56 70 51 53" stroke-width="2.6"/>
+        <path d="M60 84Q64 70 69 53" stroke-width="2.6"/>
+        <path d="M45 69Q43 60 36 54" stroke-width="2"/>
+        <path d="M75 69Q77 60 84 54" stroke-width="2"/>
+      </g>
+      <g class="roots">
+        <path d="M60 108V121" stroke-width="2.4"/>
+        <path d="M60 108Q51 114 36 114" stroke-width="2.2"/>
+        <path d="M60 108Q69 114 84 114" stroke-width="2.2"/>
+        <path d="M55 113Q50 118 42 120" stroke-width="1.8"/>
+        <path d="M65 113Q70 118 78 120" stroke-width="1.8"/>
+      </g>
+    </svg>
+    <svg class="word" viewBox="0 0 300 64" role="img" aria-label="Kalpilac Pharmaceuticals">
+      <text class="w1" x="0" y="34" font-size="38" textLength="300" lengthAdjust="spacingAndGlyphs">KALPILAC</text>
+      <text class="w2" x="0" y="58" font-size="22" textLength="300" lengthAdjust="spacingAndGlyphs">PHARMACEUTICALS</text>
+    </svg>
+  </div>
+  <div class="titlebar">
+    <div>
+      <h1>Doctor Book</h1>
+      <p class="sub">Doctors, products and samples for every MR in one place</p>
+    </div>
+    <div class="acts">
+      <button class="btn ghost" id="routebtn" data-a="addroute" hidden>+ Route</button>
+      <button class="btn" id="addbtn" data-a="add" hidden>+ Doctor</button>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="controls">
+    <div class="chips" id="routes" aria-label="Routes"></div>
+    <div class="rhead" id="routebar" hidden></div>
+    <input id="q" type="search" placeholder="Search by doctor, product, town or speciality" autocomplete="off">
+    <div class="chips" id="chips">
+      <button data-scope="all" aria-pressed="true">All doctors</button>
+      <button data-scope="mine" id="minebtn" hidden>My doctors</button>
+      <button data-scope="due" aria-pressed="false">Not met in 30+ days</button>
+    </div>
+  </div>
+  <div id="status"></div>
+  <div class="list" id="list"></div>
+</div>
+<div id="sheetwrap" hidden><div id="sheet" role="dialog" aria-modal="true"></div></div>
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+  /* Tree mark: canopy leaves laid out on a golden-angle spiral */
+  (function(){
+    var g=document.getElementById('canopy'),n=150,R=39,cx=60,cy=46,out='';
+    for(var i=0;i<n;i++){
+      var r=R*Math.sqrt((i+.5)/n),th=i*2.399963;
+      var x=cx+r*Math.cos(th),y=cy+r*Math.sin(th)*.97;
+      var rot=th*180/Math.PI+Math.sin(i*12.9898)*22;
+      out+='<ellipse class="l'+(i%3+1)+'" rx="4.6" ry="2.3" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+rot.toFixed(0)+')"/>';
+    }
+    g.innerHTML=out;
+  })();
+
+  var db=null,user=null;
+  var S={docs:[],visits:[],routes:[],route:'all',routesLoaded:false,docsLoaded:false,slow:false,err:'',q:'',scope:'all',open:null,confirmDel:null,myId:null,canWrite:true};
+  var $=function(id){return document.getElementById(id);};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function today(){return new Date().toLocaleDateString('en-CA');}
+  function dayDiff(d){return Math.round((new Date(today()+'T00:00:00')-new Date(d+'T00:00:00'))/86400000);}
+  function fmt(d){return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+  function ago(n){return n<=0?'Today':n===1?'Yesterday':n+' days ago';}
+  function split(s){return String(s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).slice(0,30);}
+  function tags(a){return a&&a.length?'<div class="tags">'+a.map(function(t){return '<span class="tag">'+esc(t)+'</span>';}).join('')+'</div>':'<span class="none">Nothing added yet</span>';}
+  var tt;function toast(m){var t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true;},2400);}
+
+  function lastOf(d){
+    if(d.lastVisit)return d.lastVisit;
+    var v=S.visits.filter(function(x){return x.doctorId===d.id;})[0];
+    return v?v.date:null;
+  }
+
+  var seq=0;
+  async function render(){
+    var my=++seq;
+    $('addbtn').hidden=!(db&&S.canWrite);
+    $('routebtn').hidden=!(db&&S.canWrite);
+    $('minebtn').hidden=!S.myId;
+    document.querySelectorAll('#chips button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.scope===S.scope?'true':'false');});
+    var st=$('status');
+    if(S.err==='signin'){st.innerHTML='<div class="notice">Sign in to claude.ai and open this page again to see the doctor list. If you do not have access, ask the owner for Contributor access from the Share menu.</div>';$('list').innerHTML='';$('kpis').innerHTML='';return;}
+    if(S.err){st.innerHTML='<div class="notice">Could not load the data ('+esc(S.err)+'). Please try again in a while.</div>';$('list').innerHTML='';return;}
+    if(!S.docsLoaded){st.innerHTML='<div class="empty">Loading the doctor list'+(S.slow?'. The network seems slow, so what you see may be out of date.':'...')+'</div>';return;}
+    st.innerHTML=(!S.canWrite?'<div class="notice">You have view-only access. Ask the owner for Contributor access to add doctors or log visits.</div>':'');
+
+    var all=S.docs.map(function(d){d._last=lastOf(d);d._gap=d._last?dayDiff(d._last):9999;return d;});
+    var rmap={};S.routes.forEach(function(r){rmap[r.id]=r;});
+    all.forEach(function(d){d._rid=d.routeId&&rmap[d.routeId]?d.routeId:'';});
+    var noneCount=all.filter(function(d){return !d._rid;}).length;
+    if(S.routesLoaded&&S.route!=='all'&&S.route!=='none'&&!rmap[S.route])S.route='all';
+    if(S.route==='none'&&!noneCount)S.route='all';
+    $('routes').innerHTML='<button data-route="all" aria-pressed="'+(S.route==='all')+'">'+(S.route==='all'?'All routes':'‹ All routes')+'</button>';
+    var rb=$('routebar');
+    if(rmap[S.route]){rb.hidden=false;rb.innerHTML='<b>Doctors on '+esc(rmap[S.route].name)+'</b>'+(S.canWrite?'<span class="acts"><button class="btn ghost sm" data-a="editroute" data-id="'+esc(S.route)+'">Edit route</button></span>':'');}
+    else if(S.route==='none'){rb.hidden=false;rb.innerHTML='<b>Doctors with no route</b>';}
+    else rb.hidden=true;
+    var rows=all.filter(function(d){return S.route==='all'||(S.route==='none'?!d._rid:d._rid===S.route);});
+    var month=today().slice(0,7);
+    $('kpis').innerHTML=
+      '<div class="kpi"><div class="l">Total doctors</div><div class="v">'+rows.length+'</div></div>'+
+      '<div class="kpi"><div class="l">Met this month</div><div class="v">'+rows.filter(function(d){return d._last&&d._last.slice(0,7)===month;}).length+'</div></div>'+
+      '<div class="kpi"><div class="l">Not met 30+ days</div><div class="v">'+rows.filter(function(d){return d._gap>30;}).length+'</div></div>';
+
+    var q=S.q.toLowerCase();
+    var vis=rows.filter(function(d){
+      if(S.scope==='mine'&&d.mrId!==S.myId)return false;
+      if(S.scope==='due'&&d._gap<=30)return false;
+      if(!q)return true;
+      var hay=[d.name,d.speciality,d.town,d.address,d.phone].concat(d.products||[],d.lastSamples||[]).join(' ').toLowerCase();
+      return hay.indexOf(q)>=0;
+    });
+    vis.sort(S.scope==='due'?function(a,b){return b._gap-a._gap;}:function(a,b){return String(a.name).localeCompare(String(b.name));});
+
+    var ps={};
+    var ids=[];rows.forEach(function(d){if(d.mrId&&ids.indexOf(d.mrId)<0)ids.push(d.mrId);});
+    if(user&&ids.length){try{ps=await user.profiles(ids);}catch(e){}}
+    if(my!==seq)return;
+    function mrName(id){if(!id)return '';if(id===S.myId)return 'You';return (ps[id]&&ps[id].name)||'Another MR';}
+
+    if(S.route==='all'&&!q&&S.scope==='all'&&S.routes.length){
+      var items=S.routes.map(function(r){var ds=all.filter(function(d){return d._rid===r.id;});return {id:r.id,name:r.name,n:ds.length,due:ds.filter(function(d){return d._gap>30;}).length};});
+      if(noneCount)items.push({id:'none',name:'No route',n:noneCount,due:all.filter(function(d){return !d._rid&&d._gap>30;}).length});
+      $('list').innerHTML=items.map(function(it){return '<button class="card rrow" data-route="'+esc(it.id)+'"><span class="rt"><b>'+esc(it.name)+'</b><span class="meta">'+it.n+' doctor'+(it.n===1?'':'s')+(it.due?' · '+it.due+' not met in 30+ days':'')+'</span></span></button>';}).join('');
+      return;
+    }
+    if(!rows.length){
+      var inRoute=S.route!=='all';
+      $('list').innerHTML='<div class="empty"><b>'+(inRoute?'No doctors on this route yet':'No doctors yet')+'</b>'+(S.canWrite?(S.routes.length?'Tap "+ Doctor" above to add one.':'Create your first route with "+ Route", then add doctors with "+ Doctor".'):'Doctors will appear here once MRs add them.')+'</div>';
+      return;
+    }
+    if(!vis.length){$('list').innerHTML='<div class="empty">No doctors match this filter.</div>';return;}
+
+    $('list').innerHTML=vis.map(function(d){
+      var cls=d._gap>30?'crit':d._gap>14?'warn':'good';
+      var pill=d._last?ago(d._gap):'Never visited';
+      var open=S.open===d.id;
+      var h='<div class="card"><button class="head" data-a="toggle" data-id="'+esc(d.id)+'" aria-expanded="'+open+'"><div class="who"><b>'+esc(d.name)+'</b><span class="meta">'+esc([d.speciality,d.town].filter(Boolean).join(' · '))+(S.route==='all'&&d._rid?' · Route: '+esc(rmap[d._rid].name):'')+(d.mrId?' · MR: '+esc(mrName(d.mrId)):'')+'</span></div><span class="pill '+cls+'">'+pill+'</span></button>';
+      if(open){
+        var hist=S.visits.filter(function(v){return v.doctorId===d.id;}).slice(0,6);
+        var lastV=hist[0];
+        h+='<div class="body">'+
+          '<div class="f"><div class="k">Contact</div><div class="phone">'+(d.phone?'<b>'+esc(d.phone)+'</b><button class="btn ghost sm" data-a="copy" data-v="'+esc(d.phone)+'">Copy</button>':'<span class="none">No number added</span>')+'</div></div>'+
+          '<div class="f"><div class="k">Address</div><div class="vv">'+(d.address?esc(d.address):'<span class="none">No address added</span>')+'</div></div>'+
+          '<div class="f"><div class="k">Route</div><div class="vv">'+(d._rid?esc(rmap[d._rid].name):'<span class="none">No route selected</span>')+'</div></div>'+
+          '<div class="f"><div class="k">Products in use</div>'+tags(d.products)+'</div>'+
+          '<div class="f"><div class="k">Last visit</div><div class="vv">'+(d._last?esc(fmt(d._last))+' ('+ago(d._gap)+')':'<span class="none">No visit logged yet</span>')+(lastV&&lastV.note?'<div class="meta">'+esc(lastV.note)+'</div>':'')+'</div></div>'+
+          '<div class="f"><div class="k">Samples given last time</div>'+tags(d.lastSamples)+'</div>'+
+          (d.notes?'<div class="f"><div class="k">Notes</div><div class="vv">'+esc(d.notes)+'</div></div>':'')+
+          (hist.length?'<div class="f"><div class="k">Visit history</div><div class="hist">'+hist.map(function(v){return '<div><b>'+esc(fmt(v.date))+'</b> · '+esc(mrName(v.mrId)||'MR')+'<br><span class="meta">Samples: '+(v.samples&&v.samples.length?esc(v.samples.join(', ')):'none')+(v.note?' · '+esc(v.note):'')+'</span></div>';}).join('')+'</div></div>':'')+
+          (S.canWrite?'<div class="acts"><button class="btn sm" data-a="visit" data-id="'+esc(d.id)+'">Log visit</button><button class="btn ghost sm" data-a="edit" data-id="'+esc(d.id)+'">Edit</button>'+
+            (S.confirmDel===d.id?'<button class="btn danger sm" data-a="del" data-id="'+esc(d.id)+'">Confirm delete?</button>':'<button class="btn danger sm" data-a="askdel" data-id="'+esc(d.id)+'">Delete</button>')+'</div>':'')+
+          '</div>';
+      }
+      return h+'</div>';
+    }).join('');
+  }
+
+  function find(id){return S.docs.filter(function(d){return d.id===id;})[0];}
+  var sheetWrap=$('sheetwrap'),sheet=$('sheet');
+  function closeSheet(){sheetWrap.hidden=true;sheet.innerHTML='';}
+  function openDoctor(id){
+    var d=id?find(id):null;
+    d=d||{};
+    var selRoute=d.routeId||(S.route!=='all'&&S.route!=='none'?S.route:'');
+    var opts='<option value="">No route selected</option>'+S.routes.map(function(r){return '<option value="'+esc(r.id)+'"'+(r.id===selRoute?' selected':'')+'>'+esc(r.name)+'</option>';}).join('');
+    sheet.innerHTML='<h2>'+(id?'Edit doctor':'New doctor')+'</h2><form data-form="doctor" data-id="'+esc(id||'')+'">'+
+      '<label>Doctor name<input id="f-name" maxlength="80" required value="'+esc(d.name||'')+'"></label>'+
+      '<label>Speciality (for example Physician, Paediatrician)<input id="f-spec" maxlength="60" value="'+esc(d.speciality||'')+'"></label>'+
+      '<label>Phone number<input id="f-phone" type="tel" inputmode="tel" maxlength="30" value="'+esc(d.phone||'')+'"></label>'+
+      '<label>Route<select id="f-route">'+opts+'</select></label>'+(S.routes.length?'':'<span class="hint">No routes yet. Add one with "+ Route" first.</span>')+
+      '<label>Town / area<input id="f-town" maxlength="60" value="'+esc(d.town||'')+'"></label>'+
+      '<label>Clinic address<textarea id="f-addr" maxlength="300">'+esc(d.address||'')+'</textarea></label>'+
+      '<label>Products the doctor uses<input id="f-prod" maxlength="400" value="'+esc((d.products||[]).join(', '))+'"></label><span class="hint">Separate products with commas, for example: Azithral 500, Pan 40</span>'+
+      '<label>Last visit date (optional)<input id="f-last" type="date" max="'+today()+'" value="'+esc(d.lastVisit||(id?'':today()))+'"></label>'+
+      '<label>Samples given last time (optional)<input id="f-samp" maxlength="400" placeholder="for example: Azithral 500 x 10" value="'+esc((d.lastSamples||[]).join(', '))+'"></label><span class="hint">Separate with commas. For future visits, use Log visit on the doctor card.</span>'+
+      '<label>Notes (optional)<textarea id="f-notes" maxlength="400">'+esc(d.notes||'')+'</textarea></label>'+
+      '<div class="acts"><button class="btn" type="submit">Save</button><button class="btn ghost" type="button" data-a="close">Close</button></div></form>';
+    sheetWrap.hidden=false;setTimeout(function(){var f=$('f-name');if(f)f.focus();},30);
+  }
+  function openRoute(id){
+    var r=id?S.routes.filter(function(x){return x.id===id;})[0]:null;
+    sheet.innerHTML='<h2>'+(r?'Edit route':'New route')+'</h2><form data-form="route" data-id="'+esc(id||'')+'">'+
+      '<label>Route name<input id="r-name" maxlength="60" required placeholder="for example: New Market Route" value="'+esc(r?r.name:'')+'"></label>'+
+      '<div class="acts"><button class="btn" type="submit">Save</button><button class="btn ghost" type="button" data-a="close">Close</button>'+
+      (r?'<button class="btn danger" type="button" data-a="askdelroute" data-id="'+esc(id)+'">Delete route</button>':'')+'</div></form>';
+    sheetWrap.hidden=false;setTimeout(function(){var f=$('r-name');if(f)f.focus();},30);
+  }
+  function openVisit(id){
+    var d=find(id);if(!d)return;
+    sheet.innerHTML='<h2>Visit: '+esc(d.name)+'</h2><form data-form="visit" data-id="'+esc(id)+'">'+
+      '<label>Visit date<input id="v-date" type="date" required value="'+today()+'" max="'+today()+'"></label>'+
+      '<label>Samples given<input id="v-samp" maxlength="400" placeholder="for example: Azithral 500 x 10"></label><span class="hint">Separate with commas. Leave empty if no sample was given.</span>'+
+      '<label>New product the doctor started prescribing (optional)<input id="v-prod" maxlength="200"></label>'+
+      '<label>Visit note (optional)<textarea id="v-note" maxlength="400" placeholder="What the doctor said, what to do next time"></textarea></label>'+
+      '<div class="acts"><button class="btn" type="submit">Save visit</button><button class="btn ghost" type="button" data-a="close">Close</button></div></form>';
+    sheetWrap.hidden=false;
+  }
+
+  document.addEventListener('click',async function(e){
+    var c=e.target.closest('[data-scope]');
+    if(c){S.scope=c.dataset.scope;render();return;}
+    var rt=e.target.closest('[data-route]');
+    if(rt){S.route=rt.dataset.route;S.open=null;S.confirmDel=null;render();return;}
+    if(e.target===sheetWrap){closeSheet();return;}
+    var b=e.target.closest('[data-a]');if(!b)return;
+    var a=b.dataset.a,id=b.dataset.id;
+    if(a==='toggle'){S.open=S.open===id?null:id;S.confirmDel=null;render();}
+    else if(a==='add')openDoctor('');
+    else if(a==='edit')openDoctor(id);
+    else if(a==='visit')openVisit(id);
+    else if(a==='addroute')openRoute('');
+    else if(a==='editroute')openRoute(id);
+    else if(a==='askdelroute'){b.textContent='Confirm delete? Doctors will move to No route';b.dataset.a='delroute';}
+    else if(a==='delroute'){
+      b.disabled=true;
+      try{
+        var aff=S.docs.filter(function(d){return d.routeId===id;});
+        for(var j=0;j<aff.length;j++){await db.doc('doctors/'+aff[j].id).update({routeId:''});}
+        await db.doc('routes/'+id).delete();
+        S.route='all';closeSheet();toast('Route deleted');
+      }catch(err){b.disabled=false;toast('Could not delete the route. Try again.');}
+    }
+    else if(a==='close')closeSheet();
+    else if(a==='askdel'){S.confirmDel=id;render();}
+    else if(a==='copy'){
+      try{await navigator.clipboard.writeText(b.dataset.v);toast('Number copied');}catch(err){toast('Copy failed. Select the number manually.');}
+    }
+    else if(a==='del'){
+      try{
+        var vs=await db.collection('visits').where('doctorId','==',id).get();
+        for(var i=0;i<vs.docs.length;i++){await db.doc('visits/'+vs.docs[i].id).delete();}
+        await db.doc('doctors/'+id).delete();
+        S.open=null;S.confirmDel=null;toast('Doctor deleted');
+      }catch(err){toast('Could not delete. Try again.');}
+    }
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!sheetWrap.hidden)closeSheet();});
+  $('q').addEventListener('input',function(e){S.q=e.target.value.trim();render();});
+
+  document.addEventListener('submit',async function(e){
+    e.preventDefault();
+    var f=e.target,kind=f.dataset.form,id=f.dataset.id;
+    var btn=f.querySelector('button[type=submit]');btn.disabled=true;
+    function g(i){return $(i).value.trim();}
+    try{
+      if(kind==='doctor'){
+        var data={name:g('f-name'),speciality:g('f-spec'),phone:g('f-phone'),town:g('f-town'),address:g('f-addr'),products:split(g('f-prod')),notes:g('f-notes'),routeId:g('f-route'),lastVisit:g('f-last'),lastSamples:split(g('f-samp'))};
+        if(id){await db.doc('doctors/'+id).update(data);}
+        else{data.mrId=S.myId||'';data.createdAt=today();var ref=await db.collection('doctors').add(data);S.open=ref.id;}
+        toast('Doctor saved');
+      }else if(kind==='route'){
+        var nm=g('r-name').replace(/\s+/g,' ');
+        var key=nm.toLowerCase();
+        var dup=S.routes.filter(function(r){return r.id!==id&&String(r.name).trim().toLowerCase()===key;})[0];
+        if(dup){
+          if(id){btn.disabled=false;toast('Another route already has this name.');return;}
+          S.route=dup.id;S.open=null;closeSheet();render();toast('This route already exists. Opened it.');return;
+        }
+        if(id){await db.doc('routes/'+id).update({name:nm});}
+        else{var rr=await db.collection('routes').add({name:nm,createdAt:today()});S.route=rr.id;}
+        toast('Route saved');
+      }else if(kind==='visit'){
+        var d=find(id),date=g('v-date'),samples=split(g('v-samp')),note=g('v-note');
+        await db.collection('visits').add({doctorId:id,mrId:S.myId||'',date:date,samples:samples,note:note});
+        var upd={};
+        if(!d.lastVisit||date>=d.lastVisit){upd.lastVisit=date;upd.lastSamples=samples;}
+        var np=split(g('v-prod'));
+        if(np.length){var cur=(d.products||[]).slice();np.forEach(function(p){if(cur.indexOf(p)<0)cur.push(p);});upd.products=cur;}
+        if(Object.keys(upd).length)await db.doc('doctors/'+id).update(upd);
+        toast('Visit saved');
+      }
+      closeSheet();
+    }catch(err){
+      btn.disabled=false;
+      toast(err&&err.code==='quota_exceeded'?'Storage is full.':'Could not save. You need edit access.');
+    }
+  });
+
+  async function boot(){
+    render();
+    if(!(window.claude&&window.claude.use)){S.err='signin';render();return;}
+    try{user=await window.claude.use('user');db=await window.claude.use('db');}catch(e){db=null;}
+    if(!db){S.err='signin';render();return;}
+    if(user){try{S.myId=await user.id();var cw=await user.can('data.write');S.canWrite=cw!==false;}catch(e){}}
+    var timer=setTimeout(function(){if(!S.docsLoaded){S.slow=true;render();}},10000);
+    db.collection('doctors').onSnapshot(function(snap){
+      S.docs=snap.docs.map(function(x){var o=Object.assign({},x.data());o.id=x.id;return o;});
+      S.docsLoaded=true;clearTimeout(timer);render();
+    },function(er){S.err=(er&&er.code)||'unavailable';S.docsLoaded=true;render();});
+    db.collection('routes').onSnapshot(function(snap){
+      S.routes=snap.docs.map(function(x){var o=Object.assign({},x.data());o.id=x.id;return o;}).sort(function(a,b){return String(a.name).localeCompare(String(b.name));});
+      S.routesLoaded=true;render();
+    },function(er){S.routesLoaded=true;});
+    db.collection('visits').orderBy('date','desc').limit(1000).onSnapshot(function(snap){
+      S.visits=snap.docs.map(function(x){var o=Object.assign({},x.data());o.id=x.id;return o;});
+      render();
+    },function(er){});
+  }
+  boot();
+})();
+</script>
+
+</body></html>
